@@ -212,8 +212,21 @@ public class Pokemon implements Comparable<Pokemon> {
             251, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488,
             489, 490, 491, 492, 493, 494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649);
 
+    private static final List<Integer> babies = Arrays.asList(172, 173, 174, 175, 236, 238, 239, 240, 298, 360, 406, 
+            433, 438, 439, 440, 446, 447, 458);
+
+    private static final List<Integer> babies2 = Arrays.asList(174, 175,360, 440);
+    
     public boolean isLegendary() {
         return legendaries.contains(this.number);
+    }
+    
+    public boolean isBaby() {
+        return babies.contains(this.number);
+    }
+    
+    public boolean isTooBaby() {
+        return babies2.contains(this.number);
     }
 
 }

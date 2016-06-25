@@ -157,6 +157,8 @@ public class Settings {
     private WildPokemonRestrictionMod wildPokemonRestrictionMod = WildPokemonRestrictionMod.NONE;
     private boolean useTimeBasedEncounters;
     private boolean blockWildLegendaries = true;
+    private boolean customWildBabiesEncounters;
+    private int wildBabiesScale = 1;
     private boolean useMinimumCatchRate;
     private int minimumCatchRateLevel = 1;
     private boolean randomizeWildPokemonHeldItems;
@@ -250,16 +252,16 @@ public class Settings {
     public String toString() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        // 0: general options #1 + trainer/class names
+        // 0: general options #1 + trainer/class names setting
         out.write(makeByteSelected(changeImpossibleEvolutions, updateMoves, updateMovesLegacy, randomizeTrainerNames,
                 randomizeTrainerClassNames, makeEvolutionsEasier));
 
-        // 1: pokemon base stats & abilities
+        // 1: pokemon base stats & abilities setting
         out.write(makeByteSelected(baseStatsFollowEvolutions, baseStatisticsMod == BaseStatisticsMod.RANDOM,
                 baseStatisticsMod == BaseStatisticsMod.SHUFFLE, baseStatisticsMod == BaseStatisticsMod.UNCHANGED,
                 standardizeEXPCurves, updateBaseStats));
 
-        // 2: pokemon types & more general options
+        // 2: pokemon types & more general options setting
         out.write(makeByteSelected(typesMod == TypesMod.RANDOM_FOLLOW_EVOLUTIONS,
                 typesMod == TypesMod.COMPLETELY_RANDOM, typesMod == TypesMod.UNCHANGED, raceMode, blockBrokenMoves,
                 limitPokemon));
@@ -269,7 +271,7 @@ public class Settings {
         out.write(makeByteSelected(abilitiesMod == AbilitiesMod.UNCHANGED, abilitiesMod == AbilitiesMod.RANDOMIZE,
                 allowWonderGuard, abilitiesFollowEvolutions, banTrappingAbilities, banNegativeAbilities));
 
-        // 4: starter pokemon stuff
+        // 4: starter pokemon setting
         out.write(makeByteSelected(startersMod == StartersMod.CUSTOM, startersMod == StartersMod.COMPLETELY_RANDOM,
                 startersMod == StartersMod.UNCHANGED, startersMod == StartersMod.RANDOM_WITH_TWO_EVOLUTIONS,
                 randomizeStartersHeldItems, banBadRandomStarterHeldItems));
@@ -279,24 +281,24 @@ public class Settings {
         write2ByteInt(out, customStarters[1] - 1);
         write2ByteInt(out, customStarters[2] - 1);
 
-        // 11 movesets
+        // 11 movesets setting
         out.write(makeByteSelected(movesetsMod == MovesetsMod.COMPLETELY_RANDOM,
                 movesetsMod == MovesetsMod.RANDOM_PREFER_SAME_TYPE, movesetsMod == MovesetsMod.UNCHANGED,
                 movesetsMod == MovesetsMod.METRONOME_ONLY, startWithFourMoves, reorderDamagingMoves));
 
-        // 12 movesets good damaging
+        // 12 movesets good damaging setting
         out.write((movesetsForceGoodDamaging ? 0x80 : 0) | movesetsGoodDamagingPercent);
 
-        // 13 trainer pokemon
+        // 13 trainer pokemon setting
         // changed 160
         out.write(makeByteSelected(trainersUsePokemonOfSimilarStrength, trainersMod == TrainersMod.RANDOM,
                 rivalCarriesStarterThroughout, trainersMod == TrainersMod.TYPE_THEMED, trainersMatchTypingDistribution,
                 trainersMod == TrainersMod.UNCHANGED, trainersBlockLegendaries, trainersBlockEarlyWonderGuard));
 
-        // 14 trainer pokemon force evolutions
+        // 14 trainer pokemon force evolutions setting
         out.write((trainersForceFullyEvolved ? 0x80 : 0) | trainersForceFullyEvolvedLevel);
 
-        // 15 wild pokemon
+        // 15 wild pokemon setting
         out.write(makeByteSelected(wildPokemonRestrictionMod == WildPokemonRestrictionMod.CATCH_EM_ALL,
                 wildPokemonMod == WildPokemonMod.AREA_MAPPING,
                 wildPokemonRestrictionMod == WildPokemonRestrictionMod.NONE,
@@ -304,19 +306,19 @@ public class Settings {
                 wildPokemonMod == WildPokemonMod.GLOBAL_MAPPING, wildPokemonMod == WildPokemonMod.RANDOM,
                 wildPokemonMod == WildPokemonMod.UNCHANGED, useTimeBasedEncounters));
 
-        // 16 wild pokemon 2
+        // 16 wild pokemon setting part 2
         // bugfix 161
         out.write(makeByteSelected(useMinimumCatchRate, blockWildLegendaries,
                 wildPokemonRestrictionMod == WildPokemonRestrictionMod.SIMILAR_STRENGTH, randomizeWildPokemonHeldItems,
                 banBadRandomWildPokemonHeldItems)
                 | ((minimumCatchRateLevel - 1) << 5));
 
-        // 17 static pokemon
+        // 17 static pokemon setting
         out.write(makeByteSelected(staticPokemonMod == StaticPokemonMod.UNCHANGED,
                 staticPokemonMod == StaticPokemonMod.RANDOM_MATCHING,
                 staticPokemonMod == StaticPokemonMod.COMPLETELY_RANDOM));
 
-        // 18 tm randomization
+        // 18 tm randomization setting
         // new stuff 162
         out.write(makeByteSelected(tmsHmsCompatibilityMod == TMsHMsCompatibilityMod.COMPLETELY_RANDOM,
                 tmsHmsCompatibilityMod == TMsHMsCompatibilityMod.RANDOM_PREFER_TYPE,
@@ -324,14 +326,14 @@ public class Settings {
                 tmsMod == TMsMod.UNCHANGED, tmLevelUpMoveSanity, keepFieldMoveTMs,
                 tmsHmsCompatibilityMod == TMsHMsCompatibilityMod.FULL));
 
-        // 19 tms part 2
+        // 19 tms setting part 2
         // new in 170
         out.write(makeByteSelected(fullHMCompat));
 
-        // 20 tms good damaging
+        // 20 tms good damaging setting
         out.write((tmsForceGoodDamaging ? 0x80 : 0) | tmsGoodDamagingPercent);
 
-        // 21 move tutor randomization
+        // 21 move tutor randomization setting
         out.write(makeByteSelected(moveTutorsCompatibilityMod == MoveTutorsCompatibilityMod.COMPLETELY_RANDOM,
                 moveTutorsCompatibilityMod == MoveTutorsCompatibilityMod.RANDOM_PREFER_TYPE,
                 moveTutorsCompatibilityMod == MoveTutorsCompatibilityMod.UNCHANGED,
@@ -339,30 +341,30 @@ public class Settings {
                 tutorLevelUpMoveSanity, keepFieldMoveTutors,
                 moveTutorsCompatibilityMod == MoveTutorsCompatibilityMod.FULL));
 
-        // 22 tutors good damaging
+        // 22 tutors good damaging setting
         out.write((tutorsForceGoodDamaging ? 0x80 : 0) | tutorsGoodDamagingPercent);
 
         // new 150
-        // 23 in game trades
+        // 23 ingame trades setting
         out.write(makeByteSelected(inGameTradesMod == InGameTradesMod.RANDOMIZE_GIVEN_AND_REQUESTED,
                 inGameTradesMod == InGameTradesMod.RANDOMIZE_GIVEN, randomizeInGameTradesItems,
                 randomizeInGameTradesIVs, randomizeInGameTradesNicknames, randomizeInGameTradesOTs,
                 inGameTradesMod == InGameTradesMod.UNCHANGED));
 
-        // 24 field items
+        // 24 field items setting
         out.write(makeByteSelected(fieldItemsMod == FieldItemsMod.RANDOM, fieldItemsMod == FieldItemsMod.SHUFFLE,
                 fieldItemsMod == FieldItemsMod.UNCHANGED, banBadRandomFieldItems));
 
         // new 170
-        // 25 move randomizers
+        // 25 move randomizers setting
         out.write(makeByteSelected(randomizeMovePowers, randomizeMoveAccuracies, randomizeMovePPs, randomizeMoveTypes,
                 randomizeMoveCategory));
 
-        // 26 evolutions
+        // 26 evolutions setting
         out.write(makeByteSelected(evolutionsMod == EvolutionsMod.UNCHANGED, evolutionsMod == EvolutionsMod.RANDOM,
                 evosSimilarStrength, evosSameTyping, evosMaxThreeStages, evosForceChange));
 
-        // @ 27 pokemon restrictions
+        // @ 27 pokemon restrictions setting
         try {
             if (currentRestrictions != null) {
                 writeFullInt(out, currentRestrictions.toInt());
@@ -372,12 +374,15 @@ public class Settings {
         } catch (IOException e) {
         }
 
-        // @ 31 misc tweaks
+        // @ 31 misc tweaks setting
         try {
             writeFullInt(out, currentMiscTweaks);
         } catch (IOException e) {
 
         }
+        
+        // @ 35 new tweaks to wild pokemon encounters
+        out.write(makeByteSelected(customWildBabiesEncounters)| ((wildBabiesScale - 1) << 1));
 
         try {
             byte[] romName = this.romName.getBytes("US-ASCII");
@@ -492,8 +497,9 @@ public class Settings {
         settings.setBlockWildLegendaries(restoreState(data[16], 1));
         settings.setRandomizeWildPokemonHeldItems(restoreState(data[16], 3));
         settings.setBanBadRandomWildPokemonHeldItems(restoreState(data[16], 4));
-
         settings.setMinimumCatchRateLevel(((data[16] & 0x60) >> 5) + 1);
+        settings.setCustomWildBabiesSetting(restoreState(data[35], 0));
+        settings.setCustomWildBabiesScale(((data[35] & 0x6) >> 1) + 1);
 
         settings.setStaticPokemonMod(restoreEnum(StaticPokemonMod.class, data[17], 0, // UNCHANGED
                 1, // RANDOM_MATCHING
@@ -1225,7 +1231,25 @@ public class Settings {
     public boolean isBlockWildLegendaries() {
         return blockWildLegendaries;
     }
+    
+    public boolean isCustomWildBabiesEncounters() {
+        return customWildBabiesEncounters;
+    }
+    
+    public Settings setCustomWildBabiesSetting(boolean customWildBabiesEncounters) {
+        this.customWildBabiesEncounters = customWildBabiesEncounters;
+        return this;
+    }
 
+    public int getCustomWildBabiesScale() {
+        return wildBabiesScale;
+    }
+
+    public Settings setCustomWildBabiesScale (int wildBabiesScale) {
+        this.wildBabiesScale = wildBabiesScale;
+        return this;
+    }
+    
     public Settings setBlockWildLegendaries(boolean blockWildLegendaries) {
         this.blockWildLegendaries = blockWildLegendaries;
         return this;

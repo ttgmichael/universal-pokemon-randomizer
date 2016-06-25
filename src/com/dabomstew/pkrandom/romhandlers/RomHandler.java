@@ -113,6 +113,26 @@ public interface RomHandler {
     // Business rules for who's legendary are in Pokemon class
     public Pokemon randomLegendaryPokemon();
 
+    // Give a random non-legendary and non-baby Pokemon who's in this game
+    // Business rules for who's legendary are in Pokemon class
+    public Pokemon randomNonBabyAndNonLegendaryPokemon();
+    
+    // Give a random non-legendary and not-too-baby Pokemon who's in this game
+    // Business rules for who's legendary are in Pokemon class
+    public Pokemon randomNonTooBabyAndNonLegendaryPokemon();
+    
+    // Give a random baby Pokemon who's in this game
+    // Business rules for who's legendary are in Pokemon class
+    public Pokemon randomBabyPokemon();
+ 
+    // Give a random non-baby Pokemon who's in this game
+    // Business rules for who's legendary are in Pokemon class
+    public Pokemon randomNonBabyPokemon();
+    
+    // Give a random not-too-baby Pokemon who's in this game
+    // Business rules for who's legendary are in Pokemon class
+    public Pokemon randomNonTooBabyPokemon();
+    
     // Give a random Pokemon who has 2 evolution stages
     // Should make a good starter Pokemon
     public Pokemon random2EvosPokemon();
@@ -146,12 +166,12 @@ public interface RomHandler {
     public void setEncounters(boolean useTimeOfDay, List<EncounterSet> encounters);
 
     public void randomEncounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed, boolean usePowerLevels,
-            boolean noLegendaries);
+            boolean noLegendaries, boolean customBabies, int babiesScale);
 
     public void area1to1Encounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed,
-            boolean usePowerLevels, boolean noLegendaries);
+            boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale);
 
-    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, boolean noLegendaries);
+    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale);
 
     public boolean hasTimeBasedEncounters();
 

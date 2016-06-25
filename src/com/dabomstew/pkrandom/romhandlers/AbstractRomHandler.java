@@ -68,8 +68,9 @@ import com.dabomstew.pkrandom.pokemon.Type;
 public abstract class AbstractRomHandler implements RomHandler {
 
     private boolean restrictionsSet;
-    protected List<Pokemon> mainPokemonList;
+    protected List<Pokemon> ingamePokemonList;
     protected List<Pokemon> noLegendaryList, onlyLegendaryList;
+    protected List<Pokemon> noBabyList, noTooBabyList, noBabyAndNoLegendaryList, noTooBabyAndnoLegendaryList, onlyBabyList;
     protected final Random random;
     protected PrintStream logStream;
 
@@ -90,70 +91,89 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     public void setPokemonPool(GenRestrictions restrictions) {
         restrictionsSet = true;
-        mainPokemonList = this.allPokemonWithoutNull();
+        ingamePokemonList = this.allPokemonWithoutNull();
         if (restrictions != null) {
-            mainPokemonList = new ArrayList<Pokemon>();
+            ingamePokemonList = new ArrayList<Pokemon>();
             List<Pokemon> allPokemon = this.getPokemon();
 
             if (restrictions.allow_gen1) {
-                addPokesFromRange(mainPokemonList, allPokemon, 1, 151);
+                addPokesFromRange(ingamePokemonList, allPokemon, 1, 151);
                 if (restrictions.assoc_g1_g2 && allPokemon.size() > 251) {
-                    addEvosFromRange(mainPokemonList, 1, 151, 152, 251);
+                    addEvosFromRange(ingamePokemonList, 1, 151, 152, 251);
                 }
                 if (restrictions.assoc_g1_g4 && allPokemon.size() > 493) {
-                    addEvosFromRange(mainPokemonList, 1, 151, 387, 493);
+                    addEvosFromRange(ingamePokemonList, 1, 151, 387, 493);
                 }
             }
 
             if (restrictions.allow_gen2 && allPokemon.size() > 251) {
-                addPokesFromRange(mainPokemonList, allPokemon, 152, 251);
+                addPokesFromRange(ingamePokemonList, allPokemon, 152, 251);
                 if (restrictions.assoc_g2_g1) {
-                    addEvosFromRange(mainPokemonList, 152, 251, 1, 151);
+                    addEvosFromRange(ingamePokemonList, 152, 251, 1, 151);
                 }
                 if (restrictions.assoc_g2_g3 && allPokemon.size() > 386) {
-                    addEvosFromRange(mainPokemonList, 152, 251, 252, 386);
+                    addEvosFromRange(ingamePokemonList, 152, 251, 252, 386);
                 }
                 if (restrictions.assoc_g2_g4 && allPokemon.size() > 493) {
-                    addEvosFromRange(mainPokemonList, 152, 251, 387, 493);
+                    addEvosFromRange(ingamePokemonList, 152, 251, 387, 493);
                 }
             }
 
             if (restrictions.allow_gen3 && allPokemon.size() > 386) {
-                addPokesFromRange(mainPokemonList, allPokemon, 252, 386);
+                addPokesFromRange(ingamePokemonList, allPokemon, 252, 386);
                 if (restrictions.assoc_g3_g2) {
-                    addEvosFromRange(mainPokemonList, 252, 386, 152, 251);
+                    addEvosFromRange(ingamePokemonList, 252, 386, 152, 251);
                 }
                 if (restrictions.assoc_g3_g4 && allPokemon.size() > 493) {
-                    addEvosFromRange(mainPokemonList, 252, 386, 387, 493);
+                    addEvosFromRange(ingamePokemonList, 252, 386, 387, 493);
                 }
             }
 
             if (restrictions.allow_gen4 && allPokemon.size() > 493) {
-                addPokesFromRange(mainPokemonList, allPokemon, 387, 493);
+                addPokesFromRange(ingamePokemonList, allPokemon, 387, 493);
                 if (restrictions.assoc_g4_g1) {
-                    addEvosFromRange(mainPokemonList, 387, 493, 1, 151);
+                    addEvosFromRange(ingamePokemonList, 387, 493, 1, 151);
                 }
                 if (restrictions.assoc_g4_g2) {
-                    addEvosFromRange(mainPokemonList, 387, 493, 152, 251);
+                    addEvosFromRange(ingamePokemonList, 387, 493, 152, 251);
                 }
                 if (restrictions.assoc_g4_g3) {
-                    addEvosFromRange(mainPokemonList, 387, 493, 252, 386);
+                    addEvosFromRange(ingamePokemonList, 387, 493, 252, 386);
                 }
             }
 
             if (restrictions.allow_gen5 && allPokemon.size() > 649) {
-                addPokesFromRange(mainPokemonList, allPokemon, 494, 649);
+                addPokesFromRange(ingamePokemonList, allPokemon, 494, 649);
             }
         }
 
         noLegendaryList = new ArrayList<Pokemon>();
         onlyLegendaryList = new ArrayList<Pokemon>();
-
-        for (Pokemon p : mainPokemonList) {
+        noBabyList = new ArrayList<Pokemon>();
+        noTooBabyList = new ArrayList<Pokemon>();
+        onlyBabyList = new ArrayList<Pokemon>();
+        noBabyAndNoLegendaryList = new ArrayList<Pokemon>();
+        noTooBabyAndnoLegendaryList = new ArrayList<Pokemon>();
+        
+        for (Pokemon p : ingamePokemonList) {
             if (p.isLegendary()) {
                 onlyLegendaryList.add(p);
             } else {
                 noLegendaryList.add(p);
+                if (p.isBaby() && !p.isTooBaby()){
+                    noTooBabyAndnoLegendaryList.add(p);
+                }
+                if (!p.isBaby()) {
+                    noBabyAndNoLegendaryList.add(p);
+                }
+            }
+            if (p.isBaby()) {
+                onlyBabyList.add(p); 
+            } else {
+                noBabyList.add(p); //list with no baby, but has legendaries!
+            }
+            if (!p.isTooBaby()){
+                noTooBabyList.add(p); //list with not too baby pokemons, but has legendaries!
             }
         }
     }
@@ -309,7 +329,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     public Pokemon randomPokemon() {
         checkPokemonRestrictions();
-        return mainPokemonList.get(this.random.nextInt(mainPokemonList.size()));
+        return ingamePokemonList.get(this.random.nextInt(ingamePokemonList.size()));
     }
 
     @Override
@@ -323,6 +343,38 @@ public abstract class AbstractRomHandler implements RomHandler {
         checkPokemonRestrictions();
         return onlyLegendaryList.get(this.random.nextInt(onlyLegendaryList.size()));
     }
+    
+    @Override
+    public Pokemon randomNonBabyAndNonLegendaryPokemon() {
+        checkPokemonRestrictions();
+        return noBabyAndNoLegendaryList.get(this.random.nextInt(noBabyAndNoLegendaryList.size()));
+    }
+    
+    @Override
+    public Pokemon randomNonTooBabyAndNonLegendaryPokemon() {
+        checkPokemonRestrictions();
+        return noTooBabyAndnoLegendaryList.get(this.random.nextInt(noTooBabyAndnoLegendaryList.size()));
+    }
+
+
+    @Override
+    public Pokemon randomBabyPokemon() {
+        checkPokemonRestrictions();
+        return onlyBabyList.get(this.random.nextInt(onlyBabyList.size()));
+    }
+    
+    @Override
+    public Pokemon randomNonBabyPokemon() {
+        checkPokemonRestrictions();
+        return noBabyList.get(this.random.nextInt(noBabyList.size()));
+    }
+    
+    @Override
+    public Pokemon randomNonTooBabyPokemon() {
+        checkPokemonRestrictions();
+        return noTooBabyList.get(this.random.nextInt(noTooBabyList.size()));
+    }
+
 
     private List<Pokemon> twoEvoPokes;
 
@@ -548,7 +600,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public void randomEncounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed, boolean usePowerLevels,
-            boolean noLegendaries) {
+            boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         List<EncounterSet> currentEncounters = this.getEncounters(useTimeOfDay);
 
@@ -559,11 +611,19 @@ public abstract class AbstractRomHandler implements RomHandler {
         Collections.shuffle(scrambledEncounters, this.random);
 
         List<Pokemon> banned = this.bannedForWildEncounters();
+        
         // Assume EITHER catch em all OR type themed OR match strength for now
         if (catchEmAll) {
 
-            List<Pokemon> allPokes = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList) : new ArrayList<Pokemon>(
-                    mainPokemonList);
+            List<Pokemon> allPokes = noLegendaries ? 
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                    new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                    new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
             allPokes.removeAll(banned);
             for (EncounterSet area : scrambledEncounters) {
                 List<Pokemon> pickablePokemon = allPokes;
@@ -576,8 +636,15 @@ public abstract class AbstractRomHandler implements RomHandler {
                     if (pickablePokemon.size() == 0) {
                         // Only banned pokes are left, ignore them and pick
                         // something else for now.
-                        List<Pokemon> tempPickable = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                                : new ArrayList<Pokemon>(mainPokemonList);
+                        List<Pokemon> tempPickable = noLegendaries ? 
+                                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                                new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                                new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
                         tempPickable.removeAll(banned);
                         tempPickable.removeAll(area.bannedPokemon);
                         if (tempPickable.size() == 0) {
@@ -595,7 +662,13 @@ public abstract class AbstractRomHandler implements RomHandler {
                         }
                         if (allPokes.size() == 0) {
                             // Start again
-                            allPokes.addAll(noLegendaries ? noLegendaryList : mainPokemonList);
+                            allPokes.addAll(noLegendaries ?
+                                    customBabies && babiesScale==3 ? noBabyAndNoLegendaryList:
+                                    customBabies && babiesScale==2 ? noTooBabyAndnoLegendaryList:
+                                    customBabies && babiesScale==1 ? noLegendaryList: noLegendaryList:
+                                    customBabies && babiesScale==3 ? noBabyList:
+                                    customBabies && babiesScale==2 ? noTooBabyList:
+                                    customBabies && babiesScale==1 ? ingamePokemonList: ingamePokemonList );
                             allPokes.removeAll(banned);
                             if (pickablePokemon != allPokes) {
                                 pickablePokemon.addAll(allPokes);
@@ -637,8 +710,15 @@ public abstract class AbstractRomHandler implements RomHandler {
                 }
             }
         } else if (usePowerLevels) {
-            List<Pokemon> allowedPokes = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                    : new ArrayList<Pokemon>(mainPokemonList);
+            List<Pokemon> allowedPokes = noLegendaries ? 
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                    new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                    new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
             allowedPokes.removeAll(banned);
             for (EncounterSet area : scrambledEncounters) {
                 List<Pokemon> localAllowed = allowedPokes;
@@ -654,9 +734,21 @@ public abstract class AbstractRomHandler implements RomHandler {
             // Entirely random
             for (EncounterSet area : scrambledEncounters) {
                 for (Encounter enc : area.encounters) {
-                    enc.pokemon = noLegendaries ? randomNonLegendaryPokemon() : randomPokemon();
+                    enc.pokemon = noLegendaries ? 
+                                customBabies && babiesScale==3 ? randomNonBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==1 ? randomNonLegendaryPokemon() : randomNonLegendaryPokemon():
+                                customBabies && babiesScale==3 ? randomNonBabyPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyPokemon() :
+                                customBabies && babiesScale==1 ? randomPokemon() : randomPokemon();
                     while (banned.contains(enc.pokemon) || area.bannedPokemon.contains(enc.pokemon)) {
-                        enc.pokemon = noLegendaries ? randomNonLegendaryPokemon() : randomPokemon();
+                        enc.pokemon = noLegendaries ? 
+                                customBabies && babiesScale==3 ? randomNonBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==1 ? randomNonLegendaryPokemon() : randomNonLegendaryPokemon():
+                                customBabies && babiesScale==3 ? randomNonBabyPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyPokemon() :
+                                customBabies && babiesScale==1 ? randomPokemon() : randomPokemon();
                     }
                 }
             }
@@ -667,21 +759,26 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public void area1to1Encounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed,
-            boolean usePowerLevels, boolean noLegendaries) {
+            boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         List<EncounterSet> currentEncounters = this.getEncounters(useTimeOfDay);
         List<Pokemon> banned = this.bannedForWildEncounters();
-
         // New: randomize the order encounter sets are randomized in.
         // Leads to less predictable results for various modifiers.
         // Need to keep the original ordering around for saving though.
         List<EncounterSet> scrambledEncounters = new ArrayList<EncounterSet>(currentEncounters);
         Collections.shuffle(scrambledEncounters, this.random);
 
-        // Assume EITHER catch em all OR type themed for now
         if (catchEmAll) {
-            List<Pokemon> allPokes = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList) : new ArrayList<Pokemon>(
-                    mainPokemonList);
+            List<Pokemon> allPokes = noLegendaries ? 
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                    new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                    customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                    customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                    customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                    new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
             allPokes.removeAll(banned);
             for (EncounterSet area : scrambledEncounters) {
                 // Poke-set
@@ -696,8 +793,15 @@ public abstract class AbstractRomHandler implements RomHandler {
                 for (Pokemon areaPk : inArea) {
                     if (pickablePokemon.size() == 0) {
                         // No more pickable pokes left, take a random one
-                        List<Pokemon> tempPickable = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                                : new ArrayList<Pokemon>(mainPokemonList);
+                        List<Pokemon> tempPickable = noLegendaries ? 
+                                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                                new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                                new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
                         tempPickable.removeAll(banned);
                         tempPickable.removeAll(area.bannedPokemon);
                         if (tempPickable.size() == 0) {
@@ -716,7 +820,13 @@ public abstract class AbstractRomHandler implements RomHandler {
                         }
                         if (allPokes.size() == 0) {
                             // Start again
-                            allPokes.addAll(noLegendaries ? noLegendaryList : mainPokemonList);
+                            allPokes.addAll(noLegendaries ?
+                                        customBabies && babiesScale==3 ? noBabyAndNoLegendaryList:
+                                        customBabies && babiesScale==2 ? noTooBabyAndnoLegendaryList:
+                                        customBabies && babiesScale==1 ? noLegendaryList: noLegendaryList:
+                                        customBabies && babiesScale==3 ? noBabyList:
+                                        customBabies && babiesScale==2 ? noTooBabyList:
+                                        customBabies && babiesScale==1 ? ingamePokemonList: ingamePokemonList );
                             allPokes.removeAll(banned);
                             if (pickablePokemon != allPokes) {
                                 pickablePokemon.addAll(allPokes);
@@ -772,8 +882,15 @@ public abstract class AbstractRomHandler implements RomHandler {
                 }
             }
         } else if (usePowerLevels) {
-            List<Pokemon> allowedPokes = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                    : new ArrayList<Pokemon>(mainPokemonList);
+            List<Pokemon> allowedPokes = noLegendaries ? 
+                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
             allowedPokes.removeAll(banned);
             for (EncounterSet area : scrambledEncounters) {
                 // Poke-set
@@ -804,10 +921,22 @@ public abstract class AbstractRomHandler implements RomHandler {
                 // Build area map using randoms
                 Map<Pokemon, Pokemon> areaMap = new TreeMap<Pokemon, Pokemon>();
                 for (Pokemon areaPk : inArea) {
-                    Pokemon picked = noLegendaries ? randomNonLegendaryPokemon() : randomPokemon();
+                    Pokemon picked = noLegendaries ? 
+                                customBabies && babiesScale==3 ? randomNonBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==1 ? randomNonLegendaryPokemon() : randomNonLegendaryPokemon():
+                                customBabies && babiesScale==3 ? randomNonBabyPokemon() : //legendaries ok
+                                customBabies && babiesScale==2 ? randomNonTooBabyPokemon() : //legendaries ok
+                                customBabies && babiesScale==1 ? randomPokemon() : randomPokemon(); //legendaries ok
                     while (areaMap.containsValue(picked) || banned.contains(picked)
                             || area.bannedPokemon.contains(picked)) {
-                        picked = noLegendaries ? randomNonLegendaryPokemon() : randomPokemon();
+                        picked = noLegendaries ? 
+                                customBabies && babiesScale==3 ? randomNonBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==2 ? randomNonTooBabyAndNonLegendaryPokemon() :
+                                customBabies && babiesScale==1 ? randomNonLegendaryPokemon() : randomNonLegendaryPokemon():
+                                customBabies && babiesScale==3 ? randomNonBabyPokemon() : //legendaries ok
+                                customBabies && babiesScale==2 ? randomNonTooBabyPokemon() : //legendaries ok
+                                customBabies && babiesScale==1 ? randomPokemon() : randomPokemon(); //legendaries ok
                     }
                     areaMap.put(areaPk, picked);
                 }
@@ -823,13 +952,20 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     @Override
-    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, boolean noLegendaries) {
+    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         // Build the full 1-to-1 map
         Map<Pokemon, Pokemon> translateMap = new TreeMap<Pokemon, Pokemon>();
         List<Pokemon> remainingLeft = allPokemonWithoutNull();
-        List<Pokemon> remainingRight = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                : new ArrayList<Pokemon>(mainPokemonList);
+        List<Pokemon> remainingRight = (noLegendaries ? 
+                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                new ArrayList<Pokemon>(ingamePokemonList)); //if customBabies is False, apply ingamePokemonList anyways
         List<Pokemon> banned = this.bannedForWildEncounters();
         // Banned pokemon should be mapped to themselves
         for (Pokemon bannedPK : banned) {
@@ -866,7 +1002,13 @@ public abstract class AbstractRomHandler implements RomHandler {
             }
             if (remainingRight.size() == 0) {
                 // restart
-                remainingRight.addAll(noLegendaries ? noLegendaryList : mainPokemonList);
+                remainingRight.addAll( noLegendaries ?
+                        customBabies && babiesScale==3 ? noBabyAndNoLegendaryList:
+                        customBabies && babiesScale==2 ? noTooBabyAndnoLegendaryList:
+                        customBabies && babiesScale==1 ? noLegendaryList: noLegendaryList:
+                        customBabies && babiesScale==3 ? noBabyList:
+                        customBabies && babiesScale==2 ? noTooBabyList:
+                        customBabies && babiesScale==1 ? ingamePokemonList: ingamePokemonList );
                 remainingRight.removeAll(banned);
             }
         }
@@ -887,8 +1029,15 @@ public abstract class AbstractRomHandler implements RomHandler {
                 enc.pokemon = translateMap.get(enc.pokemon);
                 if (area.bannedPokemon.contains(enc.pokemon)) {
                     // Ignore the map and put a random non-banned poke
-                    List<Pokemon> tempPickable = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList)
-                            : new ArrayList<Pokemon>(mainPokemonList);
+                    List<Pokemon> tempPickable = noLegendaries ? 
+                        customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyAndNoLegendaryList): //noLegendaries == True
+                        customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyAndnoLegendaryList): //noLegendaries == True
+                        customBabies && babiesScale==1 ? new ArrayList<Pokemon>(noLegendaryList): //noLegendaries == True
+                        new ArrayList<Pokemon>(noLegendaryList): //if customBabies is False, apply noLegendaryList anyways
+                        customBabies && babiesScale==3 ? new ArrayList<Pokemon>(noBabyList): //noLegendaries == False
+                        customBabies && babiesScale==2 ? new ArrayList<Pokemon>(noTooBabyList): //noLegendaries == False
+                        customBabies && babiesScale==1 ? new ArrayList<Pokemon>(ingamePokemonList): //noLegendaries == False
+                        new ArrayList<Pokemon>(ingamePokemonList); //if customBabies is False, apply ingamePokemonList anyways
                     tempPickable.removeAll(banned);
                     tempPickable.removeAll(area.bannedPokemon);
                     if (tempPickable.size() == 0) {
@@ -921,7 +1070,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
         cachedReplacementLists = new TreeMap<Type, List<Pokemon>>();
         cachedAllList = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList) : new ArrayList<Pokemon>(
-                mainPokemonList);
+                ingamePokemonList);
 
         // Fully random is easy enough - randomize then worry about rival
         // carrying starter at the end
@@ -947,7 +1096,7 @@ public abstract class AbstractRomHandler implements RomHandler {
         List<Trainer> currentTrainers = this.getTrainers();
         cachedReplacementLists = new TreeMap<Type, List<Pokemon>>();
         cachedAllList = noLegendaries ? new ArrayList<Pokemon>(noLegendaryList) : new ArrayList<Pokemon>(
-                mainPokemonList);
+                ingamePokemonList);
         typeWeightings = new TreeMap<Type, Integer>();
         totalTypeWeighting = 0;
 
@@ -1933,12 +2082,12 @@ public abstract class AbstractRomHandler implements RomHandler {
                 replacements.add(newPK);
             }
         } else {
-            List<Pokemon> pokemonLeft = new ArrayList<Pokemon>(mainPokemonList);
+            List<Pokemon> pokemonLeft = new ArrayList<Pokemon>(ingamePokemonList);
             pokemonLeft.removeAll(banned);
             for (int i = 0; i < currentStaticPokemon.size(); i++) {
                 Pokemon newPK = pokemonLeft.remove(this.random.nextInt(pokemonLeft.size()));
                 if (pokemonLeft.size() == 0) {
-                    pokemonLeft.addAll(mainPokemonList);
+                    pokemonLeft.addAll(ingamePokemonList);
                     pokemonLeft.removeAll(banned);
                 }
                 replacements.add(newPK);
@@ -2767,7 +2916,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     public void randomizeEvolutions(boolean similarStrength, boolean sameType, boolean limitToThreeStages,
             boolean forceChange) {
         checkPokemonRestrictions();
-        List<Pokemon> pokemonPool = new ArrayList<Pokemon>(mainPokemonList);
+        List<Pokemon> pokemonPool = new ArrayList<Pokemon>(ingamePokemonList);
         int stageLimit = limitToThreeStages ? 3 : 10;
 
         // Cache old evolutions for data later
@@ -2809,7 +2958,7 @@ public abstract class AbstractRomHandler implements RomHandler {
                     replacements.clear();
 
                     // Step 1: base filters
-                    for (Pokemon pk : mainPokemonList) {
+                    for (Pokemon pk : ingamePokemonList) {
                         // Prevent evolving into oneself (mandatory)
                         if (pk == fromPK) {
                             continue;
@@ -3168,7 +3317,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     private List<Pokemon> pokemonOfType(Type type, boolean noLegendaries) {
         List<Pokemon> typedPokes = new ArrayList<Pokemon>();
-        for (Pokemon pk : mainPokemonList) {
+        for (Pokemon pk : ingamePokemonList) {
             if (pk != null && (!noLegendaries || !pk.isLegendary())) {
                 if (pk.primaryType == type || pk.secondaryType == type) {
                     typedPokes.add(pk);

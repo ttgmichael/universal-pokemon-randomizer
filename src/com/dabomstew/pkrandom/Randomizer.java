@@ -367,19 +367,19 @@ public class Randomizer {
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.CATCH_EM_ALL,
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.TYPE_THEME_AREAS,
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.SIMILAR_STRENGTH,
-                    settings.isBlockWildLegendaries());
+                    settings.isBlockWildLegendaries(), settings.isCustomWildBabiesEncounters(), settings.getCustomWildBabiesScale());
             break;
         case AREA_MAPPING:
             romHandler.area1to1Encounters(settings.isUseTimeBasedEncounters(),
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.CATCH_EM_ALL,
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.TYPE_THEME_AREAS,
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.SIMILAR_STRENGTH,
-                    settings.isBlockWildLegendaries());
+                    settings.isBlockWildLegendaries(), settings.isCustomWildBabiesEncounters(), settings.getCustomWildBabiesScale());
             break;
         case GLOBAL_MAPPING:
             romHandler.game1to1Encounters(settings.isUseTimeBasedEncounters(),
                     settings.getWildPokemonRestrictionMod() == Settings.WildPokemonRestrictionMod.SIMILAR_STRENGTH,
-                    settings.isBlockWildLegendaries());
+                    settings.isBlockWildLegendaries(), settings.isCustomWildBabiesEncounters(), settings.getCustomWildBabiesScale());
             break;
         default:
             break;

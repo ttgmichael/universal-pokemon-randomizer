@@ -70,7 +70,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     private boolean restrictionsSet;
     protected List<Pokemon> ingamePokemonList;
     protected List<Pokemon> noLegendaryList, onlyLegendaryList;
-    protected List<Pokemon> noBabyList, noTooBabyList, noBabyAndNoLegendaryList, noTooBabyAndnoLegendaryList, onlyBabyList;
+    protected List<Pokemon> noBabyList, noTooBabyList, noBabyAndNoLegendaryList, noTooBabyAndnoLegendaryList, tooBabyList, onlyBabyList;
     protected final Random random;
     protected PrintStream logStream;
 
@@ -151,6 +151,7 @@ public abstract class AbstractRomHandler implements RomHandler {
         onlyLegendaryList = new ArrayList<Pokemon>();
         noBabyList = new ArrayList<Pokemon>();
         noTooBabyList = new ArrayList<Pokemon>();
+        tooBabyList = new ArrayList<Pokemon>();
         onlyBabyList = new ArrayList<Pokemon>();
         noBabyAndNoLegendaryList = new ArrayList<Pokemon>();
         noTooBabyAndnoLegendaryList = new ArrayList<Pokemon>();
@@ -172,8 +173,10 @@ public abstract class AbstractRomHandler implements RomHandler {
             } else {
                 noBabyList.add(p); //list with no baby, but has legendaries!
             }
-            if (!p.isTooBaby()){
-                noTooBabyList.add(p); //list with not too baby pokemons, but has legendaries!
+            if (p.isTooBaby()){
+                tooBabyList.add(p); //list with not too baby pokemons, but has legendaries!
+            } else {
+                noTooBabyList.add(p);
             }
         }
     }
@@ -687,6 +690,8 @@ public abstract class AbstractRomHandler implements RomHandler {
                     Type areaTheme = randomType();
                     if (!cachedPokeLists.containsKey(areaTheme)) {
                         List<Pokemon> pType = pokemonOfType(areaTheme, noLegendaries);
+                        if (customBabies && babiesScale==3){pType.removeAll(onlyBabyList);}
+                        if (customBabies && babiesScale==2){pType.removeAll(tooBabyList);}
                         pType.removeAll(banned);
                         cachedPokeLists.put(areaTheme, pType);
                     }
@@ -758,7 +763,7 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     @Override
-    public void area1to1Encounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed,
+    public void area1to1Encounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed, 
             boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         List<EncounterSet> currentEncounters = this.getEncounters(useTimeOfDay);
@@ -851,6 +856,8 @@ public abstract class AbstractRomHandler implements RomHandler {
                     Type areaTheme = randomType();
                     if (!cachedPokeLists.containsKey(areaTheme)) {
                         List<Pokemon> pType = pokemonOfType(areaTheme, noLegendaries);
+                        if (customBabies && babiesScale==3){pType.removeAll(onlyBabyList);}
+                        if (customBabies && babiesScale==2){pType.removeAll(tooBabyList);}
                         pType.removeAll(banned);
                         cachedPokeLists.put(areaTheme, pType);
                     }
@@ -952,7 +959,8 @@ public abstract class AbstractRomHandler implements RomHandler {
     }
 
     @Override
-    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale) {
+    public void game1to1Encounters(boolean useTimeOfDay, boolean usePowerLevels, 
+            boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         // Build the full 1-to-1 map
         Map<Pokemon, Pokemon> translateMap = new TreeMap<Pokemon, Pokemon>();

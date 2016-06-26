@@ -152,7 +152,7 @@ public class Settings {
     }
 
     public enum WildPokemonRestrictionMod {
-        NONE, SIMILAR_STRENGTH, CATCH_EM_ALL, TYPE_THEME_AREAS
+        NONE, SIMILAR_STRENGTH, CATCH_EM_ALL, TYPE_THEME_AREAS, HABITAT_THEME_AREAS
     }
 
     private WildPokemonMod wildPokemonMod = WildPokemonMod.UNCHANGED;
@@ -312,8 +312,8 @@ public class Settings {
         // bugfix 161
         out.write(makeByteSelected(useMinimumCatchRate, blockWildLegendaries,
                 wildPokemonRestrictionMod == WildPokemonRestrictionMod.SIMILAR_STRENGTH, randomizeWildPokemonHeldItems,
-                banBadRandomWildPokemonHeldItems)
-                | ((minimumCatchRateLevel - 1) << 5));
+                banBadRandomWildPokemonHeldItems, wildPokemonRestrictionMod == WildPokemonRestrictionMod.HABITAT_THEME_AREAS)
+                | ((minimumCatchRateLevel - 1) << 6));
 
         // 17 static pokemon setting
         out.write(makeByteSelected(staticPokemonMod == StaticPokemonMod.UNCHANGED,
@@ -497,7 +497,8 @@ public class Settings {
         settings.setWildPokemonRestrictionMod(getEnum(WildPokemonRestrictionMod.class, restoreState(data[15], 2), // NONE
                 restoreState(data[16], 2), // SIMILAR_STRENGTH
                 restoreState(data[15], 0), // CATCH_EM_ALL
-                restoreState(data[15], 3) // TYPE_THEME_AREAS
+                restoreState(data[15], 3), // TYPE_THEME_AREAS
+                restoreState(data[16], 5)  // HABITAT_THEME_AREAS
         ));
         settings.setUseTimeBasedEncounters(restoreState(data[15], 7));
 
@@ -511,7 +512,7 @@ public class Settings {
         
         settings.setStaticPokemonMod(restoreEnum(StaticPokemonMod.class, data[17], 0, // UNCHANGED
                 1, // RANDOM_MATCHING
-                2 // COMPLETELY_RANDOM
+                2  // COMPLETELY_RANDOM
         ));
 
         settings.setTmsMod(restoreEnum(TMsMod.class, data[18], 4, // UNCHANGED

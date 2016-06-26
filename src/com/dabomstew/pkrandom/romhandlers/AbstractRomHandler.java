@@ -161,7 +161,7 @@ public abstract class AbstractRomHandler implements RomHandler {
                 onlyLegendaryList.add(p);
             } else {
                 noLegendaryList.add(p);
-                if (p.isBaby() && !p.isTooBaby()){
+                if (!p.isTooBaby()){
                     noTooBabyAndnoLegendaryList.add(p);
                 }
                 if (!p.isBaby()) {
@@ -603,7 +603,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public void randomEncounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed, boolean usePowerLevels,
-            boolean noLegendaries, boolean customBabies, int babiesScale) {
+           boolean habitatThemed, boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         List<EncounterSet> currentEncounters = this.getEncounters(useTimeOfDay);
 
@@ -679,6 +679,80 @@ public abstract class AbstractRomHandler implements RomHandler {
                             }
                         }
                     }
+                }
+            }
+        } else if (habitatThemed) {
+            Map<Type, List<Pokemon>> cachedPokeLists = new TreeMap<Type, List<Pokemon>>();
+            for (EncounterSet area : scrambledEncounters) {
+                List<String> AllowableTypes =      
+                    (area.displayName.contains("Surfing") || area.displayName.contains("Fishing") || 
+                            area.displayName.contains("UNDERWATER")) ? 
+                            Arrays.asList("WATER", "BUG", "ROCK", 
+                                    "ICE","FLYING","DRAGON","GHOST"): //7/18 types
+                    (area.displayName.contains("Rock Smash")) ?
+                            Arrays.asList("ROCK","GROUND", "GRASS","BUG",
+                                    "STEEL","FIGHTING","ICE"): //7/18 types
+                    (area.displayName.contains("WHITE FOREST")) ? Arrays.asList(Type.values().toString()): //special zones where all types are allowed.
+                    (area.displayName.contains("CAVE") || area.displayName.contains("FALLS") || 
+                            area.displayName.contains("MT.") || area.displayName.contains("PASS") ||
+                            area.displayName.contains("MINE")|| area.displayName.contains("MOUNTAIN")) ?
+                            Arrays.asList("ROCK","GROUND","FLYING","POISON",
+                                    "GHOST", "DARK", "PSYCHIC", "FIGHTING", "FIRE","NORMAL","STEEL"):  //11/18 types    
+                    (area.displayName.contains("FOAM") || area.displayName.contains("SHOAL") || 
+                            area.displayName.contains("ISLAND") || 
+                            area.displayName.contains("ICE") || area.displayName.contains("SNOW")) ?
+                            Arrays.asList("WATER","ICE", "ROCK", "STEEL", "FLYING", 
+                                    "DARK", "FIGHTING", "PSYCHIC", "NORMAL", "DRAGON"): //10/18 types 
+                    (area.displayName.contains("WOODS") || area.displayName.contains("FOREST")) ?
+                            Arrays.asList("BUG","GRASS","FLYING","ELECTRIC","GHOST",
+                                    "DARK", "POISON", "PSYCHIC", "NORMAL"): //9/18 types 
+                    (area.displayName.contains("DESERT")) ?
+                            Arrays.asList("ROCK","GROUND","FLYING","POISON",
+                                    "GRASS", "FIGHTING", "FIRE", "PSYCHIC", "DRAGON"): //9/18 types
+                    (area.displayName.contains("CITY") || area.displayName.contains("HIDEOUT") || 
+                            area.displayName.contains("PLANT") || area.displayName.contains("PLANT")) ?
+                            Arrays.asList("ELECTRIC","GHOST", "STEEL", "POISON",
+                                    "NORMAL","FIGHTING"): //6/18 types 
+                            Arrays.asList(Type.values().toString()); //For all other cases, all types are allowed.
+                
+                List<Pokemon> possiblePokemon = null;
+                int iterLoops = 0;
+                while (possiblePokemon == null && iterLoops < 10000) {
+                    Type areaTheme = randomType();
+                    if (!cachedPokeLists.containsKey(areaTheme)) {
+                        List<Pokemon> pType = pokemonOfType(areaTheme, noLegendaries);
+                        if (customBabies && babiesScale==3){pType.removeAll(onlyBabyList);}
+                        if (customBabies && babiesScale==2){pType.removeAll(tooBabyList);}
+                        pType.removeAll(banned);
+                        cachedPokeLists.put(areaTheme, pType);
+                    }
+                    possiblePokemon = cachedPokeLists.get(areaTheme);
+                    if (area.bannedPokemon.size() > 0) {
+                        possiblePokemon = new ArrayList<Pokemon>(possiblePokemon);
+                        possiblePokemon.removeAll(area.bannedPokemon);
+                    }
+                    if (possiblePokemon.size() == 0 || !AllowableTypes.contains(areaTheme.toString())) {
+                        // Can't use this type for this area
+                        possiblePokemon = null;
+                    }
+                    iterLoops++;
+                }
+                if (possiblePokemon == null) {
+                    throw new RandomizationException("Could not randomize an area in a reasonable amount of attempts.");
+                }
+                
+                Set<Pokemon> inArea = pokemonInArea(area);
+                // Build area map using type theme.
+                List<Pokemon> usedPks = new ArrayList<Pokemon>();
+                Map<Pokemon, Pokemon> areaMap = new TreeMap<Pokemon, Pokemon>();
+                for (Pokemon areaPk : inArea) {
+                    Pokemon pickedMN = pickWildPowerLvlReplacement(possiblePokemon, areaPk, false, usedPks);
+                    areaMap.put(areaPk, pickedMN);
+                    usedPks.add(pickedMN);
+                }
+                for (Encounter enc : area.encounters) {
+                    // Apply the map
+                    enc.pokemon = areaMap.get(enc.pokemon);
                 }
             }
         } else if (typeThemed) {
@@ -764,7 +838,7 @@ public abstract class AbstractRomHandler implements RomHandler {
 
     @Override
     public void area1to1Encounters(boolean useTimeOfDay, boolean catchEmAll, boolean typeThemed, 
-            boolean usePowerLevels, boolean noLegendaries, boolean customBabies, int babiesScale) {
+            boolean usePowerLevels, boolean habitatThemed, boolean noLegendaries, boolean customBabies, int babiesScale) {
         checkPokemonRestrictions();
         List<EncounterSet> currentEncounters = this.getEncounters(useTimeOfDay);
         List<Pokemon> banned = this.bannedForWildEncounters();
@@ -844,6 +918,90 @@ public abstract class AbstractRomHandler implements RomHandler {
                     // Apply the map
                     enc.pokemon = areaMap.get(enc.pokemon);
                 }
+            }
+        } else if (habitatThemed) {
+            Map<Type, List<Pokemon>> cachedPokeLists = new TreeMap<Type, List<Pokemon>>();
+            for (EncounterSet area : scrambledEncounters) {
+                List<String> AllowableTypes =    
+                    (area.displayName.contains("Surfing") || 
+                            area.displayName.contains("UNDERWATER")) ? 
+                            Arrays.asList("WATER", "ROCK", 
+                                    "ICE","FLYING","DRAGON","GHOST"): //6/18 types
+                    (area.displayName.contains("Fishing")) ? 
+                            Arrays.asList("WATER", "POISON", 
+                                    "ICE","DRAGON"): //4/18 types
+                    (area.displayName.contains("Rock Smash")) ?
+                            Arrays.asList("ROCK","GROUND", "GRASS","BUG",
+                                    "STEEL","FIGHTING","ICE"): //7/18 types
+                    (area.displayName.contains("WHITE FOREST")) ? Arrays.asList("NORMAL", "FIGHTING", "FLYING", "GRASS", 
+                                    "WATER", "FIRE", "ROCK", "GROUND", 
+                                    "PSYCHIC", "BUG", "DRAGON", "ELECTRIC", 
+                                    "GHOST", "POISON", "ICE", "STEEL", "DARK"): //special zones where all types are allowed.
+                    (area.displayName.contains("CAVE") || area.displayName.contains("FALLS") || 
+                            area.displayName.contains("MT.") || area.displayName.contains("PASS") ||
+                            area.displayName.contains("MINE")|| area.displayName.contains("MOUNTAIN")) ?
+                            Arrays.asList("ROCK","GROUND","FLYING","POISON",
+                                    "GHOST", "DARK", "PSYCHIC", "FIGHTING", "FIRE","NORMAL","STEEL"):  //11/18 types    
+                    (area.displayName.contains("FOAM") || area.displayName.contains("SHOAL") || 
+                            area.displayName.contains("ISLAND") || 
+                            area.displayName.contains("ICE") || area.displayName.contains("SNOW")) ?
+                            Arrays.asList("WATER","ICE", "ROCK", "STEEL", "FLYING", 
+                                    "DARK", "FIGHTING", "PSYCHIC", "NORMAL", "DRAGON"): //10/18 types 
+                    (area.displayName.contains("WOODS") || area.displayName.contains("FOREST")) ?
+                            Arrays.asList("BUG","GRASS","FLYING","ELECTRIC","GHOST",
+                                    "DARK", "POISON", "PSYCHIC", "NORMAL"): //9/18 types 
+                    (area.displayName.contains("DESERT")) ?
+                            Arrays.asList("ROCK","GROUND","FLYING","POISON",
+                                    "GRASS", "FIGHTING", "FIRE", "PSYCHIC", "DRAGON"): //9/18 types
+                    (area.displayName.contains("CITY") || area.displayName.contains("HIDEOUT") || 
+                            area.displayName.contains("PLANT") || area.displayName.contains("PLANT")) ?
+                            Arrays.asList("ELECTRIC","GHOST", "STEEL", "POISON",
+                                    "NORMAL","FIGHTING"): //6/18 types 
+                            Arrays.asList("NORMAL", "FIGHTING", "FLYING", "GRASS", 
+                                    "WATER", "FIRE", "ROCK", "GROUND", 
+                                    "PSYCHIC", "BUG", "DRAGON", "ELECTRIC", 
+                                    "GHOST", "POISON", "ICE", "STEEL", "DARK"); //For all other cases, all types are allowed.
+                
+                List<Pokemon> possiblePokemon = null;
+                int iterLoops = 0;
+                while (possiblePokemon == null && iterLoops < 10000) {
+                    Type areaTheme = randomType();
+                    if (!cachedPokeLists.containsKey(areaTheme)) {
+                        List<Pokemon> pType = pokemonOfType(areaTheme, noLegendaries);
+                        if (customBabies && babiesScale==3){pType.removeAll(onlyBabyList);}
+                        if (customBabies && babiesScale==2){pType.removeAll(tooBabyList);}
+                        pType.removeAll(banned);
+                        cachedPokeLists.put(areaTheme, pType);
+                    }
+                    possiblePokemon = cachedPokeLists.get(areaTheme);
+                    if (area.bannedPokemon.size() > 0) {
+                        possiblePokemon = new ArrayList<Pokemon>(possiblePokemon);
+                        possiblePokemon.removeAll(area.bannedPokemon);
+                    }
+                    if (possiblePokemon.size() == 0 || !AllowableTypes.contains(areaTheme.toString())) {
+                        // Can't use this type for this area
+                        possiblePokemon = null;
+                    }
+                    iterLoops++;
+                }
+                if (possiblePokemon == null) {
+                    throw new RandomizationException("Could not randomize an area in a reasonable amount of attempts.");
+                }
+                
+                Set<Pokemon> inArea = pokemonInArea(area);
+                // Build area map using type theme.
+                List<Pokemon> usedPks = new ArrayList<Pokemon>();
+                Map<Pokemon, Pokemon> areaMap = new TreeMap<Pokemon, Pokemon>();
+                for (Pokemon areaPk : inArea) {
+                    Pokemon pickedMN = pickWildPowerLvlReplacement(possiblePokemon, areaPk, false, usedPks);
+                    areaMap.put(areaPk, pickedMN);
+                    usedPks.add(pickedMN);
+                }
+                for (Encounter enc : area.encounters) {
+                    // Apply the map
+                    enc.pokemon = areaMap.get(enc.pokemon);
+                }
+
             }
         } else if (typeThemed) {
             Map<Type, List<Pokemon>> cachedPokeLists = new TreeMap<Type, List<Pokemon>>();

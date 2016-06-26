@@ -71,6 +71,8 @@ public class Settings {
     private boolean standardizeEXPCurves;
     private boolean baseStatsFollowEvolutions;
     private boolean updateBaseStats;
+    private boolean isAddBonusEXP;
+    private int EXPYieldScale = 1;
 
     public enum AbilitiesMod {
         UNCHANGED, RANDOMIZE
@@ -380,10 +382,14 @@ public class Settings {
         } catch (IOException e) {
 
         }
+        // @ 35 new tweaks to pokemon base statistics
+        out.write(makeByteSelected(isAddBonusEXP)|(( EXPYieldScale - 1) << 1));
         
-        // @ 35 new tweaks to wild pokemon encounters
-        out.write(makeByteSelected(customWildBabiesEncounters)| ((wildBabiesScale - 1) << 1));
+        // @ 36 new tweaks to wild pokemon encounters
+        out.write(makeByteSelected(customWildBabiesEncounters)|(( wildBabiesScale - 1) << 1));
+        
 
+        
         try {
             byte[] romName = this.romName.getBytes("US-ASCII");
             out.write(romName.length);
@@ -428,7 +434,9 @@ public class Settings {
         settings.setStandardizeEXPCurves(restoreState(data[1], 4));
         settings.setBaseStatsFollowEvolutions(restoreState(data[1], 0));
         settings.setUpdateBaseStats(restoreState(data[1], 5));
-
+        settings.setIsAddBonusEXP(restoreState(data[35], 0));
+        settings.setEXPYieldScale(((data[35] & 0x6) >> 1) + 1);
+        
         settings.setTypesMod(restoreEnum(TypesMod.class, data[2], 2, // UNCHANGED
                 0, // RANDOM_FOLLOW_EVOLUTIONS
                 1 // COMPLETELY_RANDOM
@@ -498,9 +506,9 @@ public class Settings {
         settings.setRandomizeWildPokemonHeldItems(restoreState(data[16], 3));
         settings.setBanBadRandomWildPokemonHeldItems(restoreState(data[16], 4));
         settings.setMinimumCatchRateLevel(((data[16] & 0x60) >> 5) + 1);
-        settings.setCustomWildBabiesSetting(restoreState(data[35], 0));
-        settings.setCustomWildBabiesScale(((data[35] & 0x6) >> 1) + 1);
-
+        settings.setCustomWildBabiesSetting(restoreState(data[36], 0));
+        settings.setCustomWildBabiesScale(((data[36] & 0x6) >> 1) + 1);
+        
         settings.setStaticPokemonMod(restoreEnum(StaticPokemonMod.class, data[17], 0, // UNCHANGED
                 1, // RANDOM_MATCHING
                 2 // COMPLETELY_RANDOM
@@ -844,6 +852,25 @@ public class Settings {
         this.standardizeEXPCurves = standardizeEXPCurves;
         return this;
     }
+    
+    public boolean isAddBonusEXP() {
+        return isAddBonusEXP;
+    }
+    
+    public Settings setIsAddBonusEXP(boolean isAddBonusEXP) {
+        this.isAddBonusEXP = isAddBonusEXP;
+        return this;
+    }
+    
+    public Settings setEXPYieldScale(int EXPYieldScale) {
+        this.EXPYieldScale = EXPYieldScale;
+        return this;
+    }
+    
+    public int getEXPYieldScale() {
+        return EXPYieldScale;
+    }
+
 
     public boolean isUpdateBaseStats() {
         return updateBaseStats;

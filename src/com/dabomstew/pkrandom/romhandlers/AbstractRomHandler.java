@@ -3110,6 +3110,19 @@ public abstract class AbstractRomHandler implements RomHandler {
             pkmn.growthCurve = pkmn.isLegendary() ? ExpCurve.SLOW : ExpCurve.MEDIUM_FAST;
         }
     }
+    
+    @Override
+    public void addBonusEXPYield(int bonusEXP) {
+        List<Pokemon> pokes = getPokemon();
+        for (Pokemon pkmn : pokes) {
+            if (pkmn == null) {
+                continue;
+            }
+            int newEXPYield = pkmn.expYield + bonusEXP;
+            int maxEXPYield = 255;
+            pkmn.expYield = Math.min(newEXPYield, maxEXPYield);
+        }
+    }
 
     /* Private methods/structs used internally by the above methods */
 

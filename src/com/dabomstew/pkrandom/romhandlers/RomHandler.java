@@ -418,6 +418,8 @@ public interface RomHandler {
     public void minimumCatchRate(int rateNonLegendary, int rateLegendary);
 
     public void standardizeEXPCurves();
+    
+    public void addBonusEXPYield(int bonusEXP);
 
     // (Mostly) unchanging lists of moves
 

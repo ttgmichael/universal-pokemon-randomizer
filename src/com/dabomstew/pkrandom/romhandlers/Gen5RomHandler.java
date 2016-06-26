@@ -394,6 +394,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             pkmn.secondaryType = null;
         }
         pkmn.catchRate = stats[Gen5Constants.bsCatchRateOffset] & 0xFF;
+        pkmn.expYield = stats[Gen5Constants.bsExpYieldOffset] & 0xFF;
         pkmn.growthCurve = ExpCurve.fromByte(stats[Gen5Constants.bsGrowthCurveOffset]);
 
         pkmn.ability1 = stats[Gen5Constants.bsAbility1Offset] & 0xFF;
@@ -508,6 +509,7 @@ public class Gen5RomHandler extends AbstractDSRomHandler {
             stats[Gen5Constants.bsSecondaryTypeOffset] = Gen5Constants.typeToByte(pkmn.secondaryType);
         }
         stats[Gen5Constants.bsCatchRateOffset] = (byte) pkmn.catchRate;
+        stats[Gen5Constants.bsExpYieldOffset] = (byte) pkmn.expYield;
         stats[Gen5Constants.bsGrowthCurveOffset] = pkmn.growthCurve.toByte();
 
         stats[Gen5Constants.bsAbility1Offset] = (byte) pkmn.ability1;

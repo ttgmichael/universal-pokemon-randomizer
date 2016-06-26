@@ -160,6 +160,23 @@ public class Randomizer {
         if (settings.isStandardizeEXPCurves()) {
             romHandler.standardizeEXPCurves();
         }
+        
+        if (settings.isAddBonusEXP()) {
+            int bonusEXP;
+            switch (settings.getEXPYieldScale()) {
+            case 1:
+            default:
+                bonusEXP = 35;
+                break;
+            case 2:
+                bonusEXP = 84;
+                break;
+            case 3:
+                bonusEXP = 255;
+                break;
+            }
+            romHandler.addBonusEXPYield(bonusEXP);
+        }
 
         // Abilities? (new 1.0.2)
         if (romHandler.abilitiesPerPokemon() > 0 && settings.getAbilitiesMod() == Settings.AbilitiesMod.RANDOMIZE) {
@@ -216,7 +233,7 @@ public class Randomizer {
                     }
                 }
             }
-
+            
             log.println();
         }
 
@@ -335,7 +352,7 @@ public class Randomizer {
 
         // Static Pokemon
         checkValue = maybeChangeAndLogStaticPokemon(log, romHandler, raceMode, checkValue);
-
+        
         // Wild Pokemon
         if (settings.isUseMinimumCatchRate()) {
             boolean gen5 = romHandler instanceof Gen5RomHandler;
@@ -541,20 +558,20 @@ public class Randomizer {
         } else {
             log.println("--Pokemon Base Stats & Types--");
             if (romHandler instanceof Gen1RomHandler) {
-                log.println("NUM|NAME      |TYPE             |  HP| ATK| DEF| SPE|SPEC");
+                log.println("NUM|NAME      |TYPE             | EXP|  HP| ATK| DEF| SPE|SPEC");
                 for (Pokemon pkmn : allPokes) {
                     if (pkmn != null) {
                         String typeString = pkmn.primaryType == null ? "???" : pkmn.primaryType.toString();
                         if (pkmn.secondaryType != null) {
                             typeString += "/" + pkmn.secondaryType.toString();
                         }
-                        log.printf("%3d|%-10s|%-17s|%4d|%4d|%4d|%4d|%4d" + NEWLINE, pkmn.number, pkmn.name, typeString,
-                                pkmn.hp, pkmn.attack, pkmn.defense, pkmn.speed, pkmn.special);
+                        log.printf("%3d|%-10s|%-17s|%4d|%4d|%4d|%4d|%4d|%4d" + NEWLINE, pkmn.number, pkmn.name, typeString,
+                                pkmn.expYield, pkmn.catchRate, pkmn.hp, pkmn.attack, pkmn.defense, pkmn.speed, pkmn.special);
                     }
 
                 }
             } else {
-                log.print("NUM|NAME      |TYPE             |  HP| ATK| DEF| SPE|SATK|SDEF");
+                log.print("NUM|NAME      |TYPE             | EXP|  HP| ATK| DEF| SPE|SATK|SDEF");
                 int abils = romHandler.abilitiesPerPokemon();
                 for (int i = 0; i < abils; i++) {
                     log.print("|ABILITY" + (i + 1) + "    ");
@@ -567,8 +584,8 @@ public class Randomizer {
                         if (pkmn.secondaryType != null) {
                             typeString += "/" + pkmn.secondaryType.toString();
                         }
-                        log.printf("%3d|%-10s|%-17s|%4d|%4d|%4d|%4d|%4d|%4d", pkmn.number, pkmn.name, typeString,
-                                pkmn.hp, pkmn.attack, pkmn.defense, pkmn.speed, pkmn.spatk, pkmn.spdef);
+                        log.printf("%3d|%-10s|%-17s|%4d|%4d|%4d|%4d|%4d|%4d|%4d", pkmn.number, pkmn.name, typeString,
+                                pkmn.expYield, pkmn.hp, pkmn.attack, pkmn.defense, pkmn.speed, pkmn.spatk, pkmn.spdef);
                         if (abils > 0) {
                             log.printf("|%-12s|%-12s", romHandler.abilityName(pkmn.ability1),
                                     romHandler.abilityName(pkmn.ability2));

@@ -162,6 +162,7 @@ public class Randomizer {
         }
         
         if (settings.isAddBonusEXP()) {
+            boolean gen5 = romHandler instanceof Gen5RomHandler;
             int bonusEXP;
             switch (settings.getEXPYieldScale()) {
             case 1:
@@ -175,7 +176,7 @@ public class Randomizer {
                 bonusEXP = 255;
                 break;
             }
-            romHandler.addBonusEXPYield(bonusEXP);
+            romHandler.addBonusEXPYield(bonusEXP, gen5);
         }
 
         // Abilities? (new 1.0.2)

@@ -419,7 +419,7 @@ public interface RomHandler {
 
     public void standardizeEXPCurves();
     
-    public void addBonusEXPYield(int bonusEXP);
+    public void addBonusEXPYield(int bonusEXP, boolean gen5);
 
     // (Mostly) unchanging lists of moves
 

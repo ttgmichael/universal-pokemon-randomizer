@@ -170,9 +170,12 @@ public class Randomizer {
                 bonusEXP = 35;
                 break;
             case 2:
-                bonusEXP = 84;
+                bonusEXP = 70;
                 break;
             case 3:
+                bonusEXP = 105;
+                break;
+            case 4:
                 bonusEXP = 255;
                 break;
             }

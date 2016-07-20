@@ -732,9 +732,6 @@ public abstract class AbstractRomHandler implements RomHandler {
                         possiblePokemon.add(pk);
                     }
                 }
-                if (possiblePokemon == null) {
-                    throw new RandomizationException("Could not randomize an area in a reasonable amount of attempts.");
-                }
                 
                 Set<Pokemon> inArea = pokemonInArea(area);
                 // Build area map using type theme.
@@ -964,9 +961,6 @@ public abstract class AbstractRomHandler implements RomHandler {
                     for (Pokemon pk: pType){
                         possiblePokemon.add(pk);
                     }
-                }
-                if (possiblePokemon == null) {
-                    throw new RandomizationException("Could not randomize an area in a reasonable amount of attempts.");
                 }
                 
                 Set<Pokemon> inArea = pokemonInArea(area);

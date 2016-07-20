@@ -3020,7 +3020,7 @@ public class RandomizerGUI extends javax.swing.JFrame {
         });
 
         pbsEXPYieldSlider.setMajorTickSpacing(1);
-        pbsEXPYieldSlider.setMaximum(3);
+        pbsEXPYieldSlider.setMaximum(4);
         pbsEXPYieldSlider.setMinimum(1);
         pbsEXPYieldSlider.setMinorTickSpacing(1);
         pbsEXPYieldSlider.setPaintLabels(true);
